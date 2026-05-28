@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TTS Studio - Gemini</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;700&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      :root {
+        --bg: #0f0f11;
+        --surface: #18181c;
+        --surface2: #222228;
+        --border: rgba(255, 255, 255, 0.08);
+        --border-focus: rgba(255, 255, 255, 0.22);
+        --text: #f0eee8;
+        --muted: #888680;
+        --accent: #ac87eb;
+        --accent-dim: rgba(172, 135, 235, 0.12);
+        --danger: #f07a7a;
+        --radius: 12px;
+        --font-head: "Syne", sans-serif;
+        --font-mono: "DM Mono", monospace;
+      }
+      body {
+        background: var(--bg); color: var(--text); font-family: var(--font-head);
+        min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem 1.5rem 4rem;
+      }
+      header {
+        width: 100%; max-width: 1080px; display: flex; align-items: baseline; gap: 1rem;
+        margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 0.5px solid var(--border);
+      }
+      header h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.03em; color: var(--accent); }
+      .subtitle {
+        font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted);
+        background: var(--surface2); padding: 3px 8px; border-radius: 4px; border: 0.5px solid var(--border);
+      }
+      .server-status {
+        font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted);
+        display: flex; align-items: center; gap: 8px; margin-left: auto;
+      }
+      .engine-status { display: flex; align-items: center; gap: 4px; }
+      .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+      .status-dot.ok { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+      .status-dot.err { background: var(--danger); }
+
+      .layout {
+        width: 100%; max-width: 1080px; display: grid; grid-template-columns: 1fr 380px; gap: 1rem; align-items: start;
+      }
+      .layout-left, .layout-right { display: flex; flex-direction: column; gap: 1rem; }
+
+      .card { width: 100%; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
+      .card-label {
+        font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase;
+        color: var(--muted); margin-bottom: 1rem; display: flex; align-items: center; gap: 6px;
+      }
+      .card-label::before {
+        content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+      }
+
+      .tabs {
+        display: flex; gap: 4px; margin-bottom: 1.25rem; background: var(--bg); padding: 4px; border-radius: 8px; border: 0.5px solid var(--border);
+      }
+      .tab {
+        flex: 1; padding: 8px; border: none; border-radius: 6px; background: transparent; color: var(--muted);
+        font-family: var(--font-head); font-size: 0.82rem; font-weight: 500; cursor: pointer; transition: all 0.15s;
+      }
+      .tab.active { background: var(--surface2); color: var(--text); border: 0.5px solid var(--border-focus); }
+      .tab-content { display: none; }
+      .tab-content.active { display: block; }
+
+      textarea {
+        width: 100%; min-height: 180px; background: var(--bg); border: 0.5px solid var(--border); border-radius: 8px;
+        color: var(--text); font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.6; padding: 1rem; resize: vertical; outline: none; transition: border-color 0.15s;
+      }
+      textarea:focus { border-color: var(--border-focus); }
+
+      .drop-zone {
+        border: 1px dashed var(--border); border-radius: 8px; padding: 2.5rem 1rem; text-align: center; cursor: pointer; transition: all 0.2s; position: relative;
+      }
+      .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: var(--accent-dim); }
+      .drop-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+      .drop-icon { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
+      .drop-zone p { color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
+      .file-name { color: var(--accent); font-family: var(--font-mono); font-size: 0.82rem; margin-top: 0.5rem; font-weight: 500; }
+      .char-count { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); text-align: right; margin-top: 4px; }
+
+      .control-group { margin-bottom: 1rem; }
+      .control-group:last-child { margin-bottom: 0; }
+      .control-group label {
+        display: block; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem;
+      }
+      select {
+        width: 100%; background: var(--bg); border: 0.5px solid var(--border); border-radius: 8px; color: var(--text);
+        font-family: var(--font-head); font-size: 0.85rem; padding: 9px 32px 9px 12px; outline: none; cursor: pointer;
+        appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888680' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat; background-position: right 12px center;
+      }
+      select:focus { border-color: var(--border-focus); }
+
+      .btn-generate {
+        width: 100%; padding: 1rem; border: none; border-radius: var(--radius); background: var(--accent); color: #0f0f11;
+        font-family: var(--font-head); font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.15s;
+      }
+      .btn-generate:hover { background: #987be9; transform: translateY(-1px); }
+      .btn-generate:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; transform: none; }
+
+      .loading-bar {
+        width: 100%; height: 2px; background: var(--surface2); border-radius: 1px; overflow: hidden; display: none; margin-top: 0.5rem;
+      }
+      .loading-bar.active { display: block; }
+      .loading-bar::after {
+        content: ""; display: block; height: 100%; width: 40%; background: var(--accent); border-radius: 1px; animation: slide 1.2s ease-in-out infinite;
+      }
+      @keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(350%); } }
+
+      .error-msg {
+        display: none; background: rgba(240, 122, 122, 0.08); border: 0.5px solid rgba(240, 122, 122, 0.3); border-radius: 8px;
+        padding: 0.85rem 1rem; color: var(--danger); font-family: var(--font-mono); font-size: 0.8rem; margin-top: 0.5rem;
+      }
+      .error-msg.active { display: block; }
+
+      .result-card { display: none; background: var(--surface); border: 0.5px solid var(--accent); border-radius: var(--radius); padding: 1.5rem; }
+      .result-card.active { display: block; }
+      audio { width: 100%; margin: 0.75rem 0; }
+      .btn-dl {
+        display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border: 0.5px solid var(--border-focus);
+        border-radius: 8px; background: var(--surface2); color: var(--text); font-family: var(--font-mono); font-size: 0.78rem; cursor: pointer; text-decoration: none; transition: all 0.15s;
+      }
+      .btn-dl:hover { border-color: var(--accent); color: var(--accent); }
+
+      .info-box {
+        background: var(--accent-dim); border: 0.5px solid rgba(172, 135, 235, 0.25); border-radius: 8px; padding: 0.75rem 1rem;
+        font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); line-height: 1.6;
+      }
+
+      @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>tts studio</h1>
+      <span class="subtitle">gemini cloud</span>
+      <div class="server-status">
+        <div class="engine-status">
+          <span class="status-dot" id="dot-gemini"></span>
+          <span>gemini api</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <div class="layout-left">
+        <div class="card">
+          <div class="card-label">source</div>
+          <div class="tabs">
+            <button class="tab active" data-tab="text">Texte libre</button>
+            <button class="tab" data-tab="file">Upload fichier</button>
+          </div>
+          <div class="tab-content active" id="tab-text">
+            <textarea id="text-input" placeholder="Colle ton texte ici…" maxlength="50000"></textarea>
+            <div class="char-count"><span id="char-count">0</span> / 50 000 caractères</div>
+          </div>
+          <div class="tab-content" id="tab-file">
+            <div class="drop-zone" id="drop-zone">
+              <input type="file" id="file-input" accept=".txt,.epub,.pdf" />
+              <span class="drop-icon">📄</span>
+              <p>Glisse un fichier ici ou clique pour parcourir</p>
+              <p style="margin-top: 4px; font-size: 0.75rem">.txt · .epub · .pdf</p>
+              <div class="file-name" id="file-name" style="display: none"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-card" id="result-card">
+          <div class="card-label">résultat</div>
+          <audio id="audio-player" controls></audio>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 0.5rem">
+            <a class="btn-dl" id="dl-link" download>⬇ Télécharger</a>
+            <button class="btn-dl" onclick="resetResult()">↩ Nouveau</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="layout-right">
+        <div class="card">
+          <div class="card-label">gemini — configuration</div>
+          <div class="info-box" style="margin-bottom: 1rem;">
+            Généré via l'API Google Cloud. Nécessite que la variable d'environnement GEMINI_API_KEY soit configurée.
+          </div>
+          <div class="control-group">
+            <label>Voix prédéfinie</label>
+            <select id="gemini-voice">
+              <option value="Kore">Kore</option>
+              <option value="Puck">Puck</option>
+              <option value="Charon">Charon</option>
+              <option value="Fenrir">Fenrir</option>
+              <option value="Aoede">Aoede</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-generate" id="btn-gemini" onclick="generateGemini()">Générer avec Gemini</button>
+        <div class="loading-bar" id="loading-gemini"></div>
+        <div class="error-msg" id="error-gemini"></div>
+      </div>
+    </div>
+
+    <script>
+      // When deployed locally, it's relative. When on Docker, standard paths work.
+      // We can use relative /status and /tts/gemini to make it robust regardless of host
+      const API = ""; 
+
+      async function checkStatus() {
+        try {
+          const r = await fetch(`${API}/status`, { signal: AbortSignal.timeout(3000) });
+          const d = await r.json();
+          document.getElementById("dot-gemini").className = "status-dot " + (d.gemini ? "ok" : "err");
+        } catch {
+          document.getElementById("dot-gemini").className = "status-dot err";
+        }
+      }
+      checkStatus();
+      setInterval(checkStatus, 10000);
+
+      document.querySelectorAll(".tab").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".tab").forEach((b) => b.classList.remove("active"));
+          document.querySelectorAll(".tab-content").forEach((c) => c.classList.remove("active"));
+          btn.classList.add("active");
+          document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+        });
+      });
+
+      document.getElementById("text-input").addEventListener("input", function () {
+        document.getElementById("char-count").textContent = this.value.length.toLocaleString("fr");
+      });
+
+      const dropZone = document.getElementById("drop-zone");
+      const fileInput = document.getElementById("file-input");
+      dropZone.addEventListener("dragover", (e) => { e.preventDefault(); dropZone.classList.add("drag-over"); });
+      dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-over"));
+      dropZone.addEventListener("drop", (e) => {
+        e.preventDefault(); dropZone.classList.remove("drag-over");
+        if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+      });
+      fileInput.addEventListener("change", () => { if (fileInput.files[0]) setFile(fileInput.files[0]); });
+
+      function setFile(f) {
+        const ext = "." + f.name.split(".").pop().toLowerCase();
+        if (![".txt", ".epub", ".pdf"].includes(ext)) {
+          showError("gemini", "Format non supporté");
+          return;
+        }
+        const fn = document.getElementById("file-name");
+        fn.textContent = `📎 ${f.name} (${(f.size / 1024).toFixed(1)} KB)`;
+        fn.style.display = "block";
+      }
+
+      function getInput() {
+        const activeTab = document.querySelector(".tab.active").dataset.tab;
+        const text = document.getElementById("text-input").value.trim();
+        const file = fileInput.files[0];
+        return { activeTab, text, file };
+      }
+
+      async function generateGemini() {
+        hideError("gemini");
+        const { activeTab, text, file } = getInput();
+        if (activeTab === "text" && !text) { showError("gemini", "Entre du texte."); return; }
+        if (activeTab === "file" && !file) { showError("gemini", "Sélectionne un fichier."); return; }
+        
+        setLoading("gemini", true);
+        const fd = new FormData();
+        fd.append("voice", document.getElementById("gemini-voice").value);
+        if (activeTab === "text") fd.append("text", text);
+        else fd.append("file", file);
+        
+        try {
+          const res = await fetch(`${API}/tts/gemini`, { method: "POST", body: fd });
+          if (!res.ok) {
+            const e = await res.json().catch(() => ({ detail: "Erreur serveur" }));
+            throw new Error(e.detail);
+          }
+          showResult(await res.json());
+        } catch (e) {
+          showError("gemini", `Erreur : ${e.message}`);
+        } finally {
+          setLoading("gemini", false);
+        }
+      }
+
+      function showResult(data) {
+        const url = `data:${data.media_type};base64,${data.audio}`;
+        const player = document.getElementById("audio-player");
+        player.src = url;
+        player.play();
+        const dl = document.getElementById("dl-link");
+        dl.href = url;
+        dl.download = data.filename;
+        document.getElementById("result-card").classList.add("active");
+        document.getElementById("result-card").scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+
+      function setLoading(engine, active) {
+        const btn = document.getElementById(`btn-${engine}`);
+        const bar = document.getElementById(`loading-${engine}`);
+        btn.disabled = active;
+        btn.textContent = active ? "Génération en cours…" : "Générer avec Gemini";
+        bar.classList.toggle("active", active);
+      }
+
+      function showError(engine, msg) {
+        const el = document.getElementById(`error-${engine}`);
+        el.textContent = msg;
+        el.classList.add("active");
+      }
+
+      function hideError(engine) {
+        document.getElementById(`error-${engine}`).classList.remove("active");
+      }
+
+      function resetResult() {
+        document.getElementById("result-card").classList.remove("active");
+        document.getElementById("audio-player").src = "";
+      }
+    </script>
+  </body>
+</html>
