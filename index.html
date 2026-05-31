@@ -5,9 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TTS Studio - Gemini</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
       :root {
         --bg: #0f0f11;
         --surface: #18181c;
@@ -19,123 +28,530 @@
         --accent: #ac87eb;
         --accent-dim: rgba(172, 135, 235, 0.12);
         --danger: #f07a7a;
+        --green: #64dc82;
+        --green-dim: rgba(100, 220, 130, 0.12);
+        --yellow: #ffc832;
         --radius: 12px;
         --font-head: "Syne", sans-serif;
         --font-mono: "DM Mono", monospace;
       }
       body {
-        background: var(--bg); color: var(--text); font-family: var(--font-head);
-        min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem 1.5rem 4rem;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-head);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem 1.5rem 4rem;
       }
       header {
-        width: 100%; max-width: 1080px; display: flex; align-items: baseline; gap: 1rem;
-        margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 0.5px solid var(--border);
+        width: 100%;
+        max-width: 1080px;
+        display: flex;
+        align-items: baseline;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 0.5px solid var(--border);
       }
-      header h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.03em; color: var(--accent); }
+      header h1 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        color: var(--accent);
+      }
       .subtitle {
-        font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted);
-        background: var(--surface2); padding: 3px 8px; border-radius: 4px; border: 0.5px solid var(--border);
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        color: var(--muted);
+        background: var(--surface2);
+        padding: 3px 8px;
+        border-radius: 4px;
+        border: 0.5px solid var(--border);
       }
       .server-status {
-        font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted);
-        display: flex; align-items: center; gap: 8px; margin-left: auto;
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: auto;
       }
-      .engine-status { display: flex; align-items: center; gap: 4px; }
-      .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
-      .status-dot.ok { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
-      .status-dot.err { background: var(--danger); }
+      .engine-status {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .status-dot {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--muted);
+      }
+      .status-dot.ok {
+        background: var(--accent);
+        box-shadow: 0 0 6px var(--accent);
+      }
+      .status-dot.err {
+        background: var(--danger);
+      }
 
       .layout {
-        width: 100%; max-width: 1080px; display: grid; grid-template-columns: 1fr 380px; gap: 1rem; align-items: start;
+        width: 100%;
+        max-width: 1080px;
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 1rem;
+        align-items: start;
       }
-      .layout-left, .layout-right { display: flex; flex-direction: column; gap: 1rem; }
+      .layout-left,
+      .layout-right {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
 
-      .card { width: 100%; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
+      .card {
+        width: 100%;
+        background: var(--surface);
+        border: 0.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+      }
       .card-label {
-        font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase;
-        color: var(--muted); margin-bottom: 1rem; display: flex; align-items: center; gap: 6px;
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
       }
       .card-label::before {
-        content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+        content: "";
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
       }
 
       .tabs {
-        display: flex; gap: 4px; margin-bottom: 1.25rem; background: var(--bg); padding: 4px; border-radius: 8px; border: 0.5px solid var(--border);
+        display: flex;
+        gap: 4px;
+        margin-bottom: 1.25rem;
+        background: var(--bg);
+        padding: 4px;
+        border-radius: 8px;
+        border: 0.5px solid var(--border);
       }
       .tab {
-        flex: 1; padding: 8px; border: none; border-radius: 6px; background: transparent; color: var(--muted);
-        font-family: var(--font-head); font-size: 0.82rem; font-weight: 500; cursor: pointer; transition: all 0.15s;
+        flex: 1;
+        padding: 8px;
+        border: none;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--muted);
+        font-family: var(--font-head);
+        font-size: 0.82rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s;
       }
-      .tab.active { background: var(--surface2); color: var(--text); border: 0.5px solid var(--border-focus); }
-      .tab-content { display: none; }
-      .tab-content.active { display: block; }
+      .tab.active {
+        background: var(--surface2);
+        color: var(--text);
+        border: 0.5px solid var(--border-focus);
+      }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
 
       textarea {
-        width: 100%; min-height: 180px; background: var(--bg); border: 0.5px solid var(--border); border-radius: 8px;
-        color: var(--text); font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.6; padding: 1rem; resize: vertical; outline: none; transition: border-color 0.15s;
+        width: 100%;
+        min-height: 180px;
+        background: var(--bg);
+        border: 0.5px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        line-height: 1.6;
+        padding: 1rem;
+        resize: vertical;
+        outline: none;
+        transition: border-color 0.15s;
       }
-      textarea:focus { border-color: var(--border-focus); }
+      textarea:focus {
+        border-color: var(--border-focus);
+      }
 
       .drop-zone {
-        border: 1px dashed var(--border); border-radius: 8px; padding: 2.5rem 1rem; text-align: center; cursor: pointer; transition: all 0.2s; position: relative;
+        border: 1px dashed var(--border);
+        border-radius: 8px;
+        padding: 2.5rem 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
       }
-      .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: var(--accent-dim); }
-      .drop-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-      .drop-icon { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
-      .drop-zone p { color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
-      .file-name { color: var(--accent); font-family: var(--font-mono); font-size: 0.82rem; margin-top: 0.5rem; font-weight: 500; }
-      .char-count { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); text-align: right; margin-top: 4px; }
+      .drop-zone:hover,
+      .drop-zone.drag-over {
+        border-color: var(--accent);
+        background: var(--accent-dim);
+      }
+      .drop-zone input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+      }
+      .drop-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        display: block;
+      }
+      .drop-zone p {
+        color: var(--muted);
+        font-size: 0.85rem;
+        line-height: 1.5;
+      }
+      .file-name {
+        color: var(--accent);
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+        margin-top: 0.5rem;
+        font-weight: 500;
+      }
+      .char-count {
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        color: var(--muted);
+        text-align: right;
+        margin-top: 4px;
+      }
 
-      .control-group { margin-bottom: 1rem; }
-      .control-group:last-child { margin-bottom: 0; }
+      .control-group {
+        margin-bottom: 1rem;
+      }
+      .control-group:last-child {
+        margin-bottom: 0;
+      }
       .control-group label {
-        display: block; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem;
+        display: block;
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 0.5rem;
       }
       select {
-        width: 100%; background: var(--bg); border: 0.5px solid var(--border); border-radius: 8px; color: var(--text);
-        font-family: var(--font-head); font-size: 0.85rem; padding: 9px 32px 9px 12px; outline: none; cursor: pointer;
-        appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888680' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
-        background-repeat: no-repeat; background-position: right 12px center;
+        width: 100%;
+        background: var(--bg);
+        border: 0.5px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-family: var(--font-head);
+        font-size: 0.85rem;
+        padding: 9px 32px 9px 12px;
+        outline: none;
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888680' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
       }
-      select:focus { border-color: var(--border-focus); }
+      select:focus {
+        border-color: var(--border-focus);
+      }
 
       .btn-generate {
-        width: 100%; padding: 1rem; border: none; border-radius: var(--radius); background: var(--accent); color: #0f0f11;
-        font-family: var(--font-head); font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.15s;
+        width: 100%;
+        padding: 1rem;
+        border: none;
+        border-radius: var(--radius);
+        background: var(--accent);
+        color: #0f0f11;
+        font-family: var(--font-head);
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s;
       }
-      .btn-generate:hover { background: #987be9; transform: translateY(-1px); }
-      .btn-generate:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; transform: none; }
+      .btn-generate:hover {
+        background: #987be9;
+        transform: translateY(-1px);
+      }
+      .btn-generate:disabled {
+        background: var(--surface2);
+        color: var(--muted);
+        cursor: not-allowed;
+        transform: none;
+      }
 
       .loading-bar {
-        width: 100%; height: 2px; background: var(--surface2); border-radius: 1px; overflow: hidden; display: none; margin-top: 0.5rem;
+        width: 100%;
+        height: 2px;
+        background: var(--surface2);
+        border-radius: 1px;
+        overflow: hidden;
+        display: none;
+        margin-top: 0.5rem;
       }
-      .loading-bar.active { display: block; }
+      .loading-bar.active {
+        display: block;
+      }
       .loading-bar::after {
-        content: ""; display: block; height: 100%; width: 40%; background: var(--accent); border-radius: 1px; animation: slide 1.2s ease-in-out infinite;
+        content: "";
+        display: block;
+        height: 100%;
+        width: 40%;
+        background: var(--accent);
+        border-radius: 1px;
+        animation: slide 1.2s ease-in-out infinite;
       }
-      @keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(350%); } }
+      @keyframes slide {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(350%);
+        }
+      }
 
       .error-msg {
-        display: none; background: rgba(240, 122, 122, 0.08); border: 0.5px solid rgba(240, 122, 122, 0.3); border-radius: 8px;
-        padding: 0.85rem 1rem; color: var(--danger); font-family: var(--font-mono); font-size: 0.8rem; margin-top: 0.5rem;
+        display: none;
+        background: rgba(240, 122, 122, 0.08);
+        border: 0.5px solid rgba(240, 122, 122, 0.3);
+        border-radius: 8px;
+        padding: 0.85rem 1rem;
+        color: var(--danger);
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        margin-top: 0.5rem;
       }
-      .error-msg.active { display: block; }
+      .error-msg.active {
+        display: block;
+      }
 
-      .result-card { display: none; background: var(--surface); border: 0.5px solid var(--accent); border-radius: var(--radius); padding: 1.5rem; }
-      .result-card.active { display: block; }
-      audio { width: 100%; margin: 0.75rem 0; }
+      .result-card {
+        display: none;
+        background: var(--surface);
+        border: 0.5px solid var(--accent);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+      }
+      .result-card.active {
+        display: block;
+      }
+      audio {
+        width: 100%;
+        margin: 0.75rem 0;
+      }
       .btn-dl {
-        display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border: 0.5px solid var(--border-focus);
-        border-radius: 8px; background: var(--surface2); color: var(--text); font-family: var(--font-mono); font-size: 0.78rem; cursor: pointer; text-decoration: none; transition: all 0.15s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border: 0.5px solid var(--border-focus);
+        border-radius: 8px;
+        background: var(--surface2);
+        color: var(--text);
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.15s;
       }
-      .btn-dl:hover { border-color: var(--accent); color: var(--accent); }
-
-      .info-box {
-        background: var(--accent-dim); border: 0.5px solid rgba(172, 135, 235, 0.25); border-radius: 8px; padding: 0.75rem 1rem;
-        font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); line-height: 1.6;
+      .btn-dl:hover {
+        border-color: var(--accent);
+        color: var(--accent);
       }
 
-      @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+      /* ── Batch Queue Panel ────────────────────────────── */
+      .batch-panel {
+        display: none;
+        background: var(--surface);
+        border: 0.5px solid var(--accent);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+      }
+      .batch-panel.active {
+        display: block;
+      }
+      .batch-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+      }
+      .batch-counter {
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        color: var(--accent);
+        font-weight: 500;
+      }
+      .btn-stop {
+        padding: 6px 16px;
+        border: 0.5px solid rgba(240, 122, 122, 0.4);
+        border-radius: 8px;
+        background: rgba(240, 122, 122, 0.1);
+        color: var(--danger);
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .btn-stop:hover {
+        background: rgba(240, 122, 122, 0.2);
+        border-color: var(--danger);
+      }
+      .batch-timer {
+        font-family: var(--font-mono);
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--text);
+        letter-spacing: 0.04em;
+        text-align: right;
+      }
+      .batch-timer .timer-label {
+        display: block;
+        font-size: 0.62rem;
+        font-weight: 400;
+        color: var(--muted);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+      }
+      .batch-progress-bar {
+        width: 100%;
+        height: 8px;
+        background: var(--surface2);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+      }
+      .batch-progress-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, var(--accent), #c9a4ff);
+        border-radius: 4px;
+        transition: width 0.5s ease;
+      }
+      .batch-list {
+        max-height: 400px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding-right: 4px;
+      }
+      .batch-list::-webkit-scrollbar {
+        width: 4px;
+      }
+      .batch-list::-webkit-scrollbar-thumb {
+        background: var(--surface2);
+        border-radius: 2px;
+      }
+      .batch-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        background: var(--bg);
+        border: 0.5px solid var(--border);
+        border-radius: 8px;
+        font-size: 0.85rem;
+        transition: border-color 0.3s, background 0.3s;
+      }
+      .batch-item.queue {
+        opacity: 0.45;
+      }
+      .batch-item.active-item {
+        border-color: var(--accent);
+        background: var(--accent-dim);
+        opacity: 1;
+      }
+      .batch-item.done-item {
+        border-color: rgba(100, 220, 130, 0.3);
+        opacity: 1;
+      }
+      .batch-item.error-item {
+        border-color: rgba(240, 122, 122, 0.3);
+        opacity: 1;
+      }
+      .batch-icon {
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        width: 24px;
+        text-align: center;
+      }
+      .batch-title {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: var(--text);
+      }
+      .batch-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+      .batch-actions .batch-time {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        color: var(--muted);
+      }
+      .batch-actions .btn-item-dl {
+        padding: 4px 10px;
+        border: 0.5px solid var(--border-focus);
+        border-radius: 6px;
+        background: var(--surface2);
+        color: var(--text);
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.15s;
+      }
+      .batch-actions .btn-item-dl:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--accent-dim);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+
+      @media (max-width: 860px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
     </style>
   </head>
   <body>
@@ -159,36 +575,63 @@
             <button class="tab" data-tab="file">Upload fichier</button>
           </div>
           <div class="tab-content active" id="tab-text">
-            <textarea id="text-input" placeholder="Colle ton texte ici…" maxlength="50000"></textarea>
-            <div class="char-count"><span id="char-count">0</span> / 50 000 caractères</div>
+            <textarea
+              id="text-input"
+              placeholder="Colle ton texte ici…"
+              maxlength="50000"
+            ></textarea>
+            <div class="char-count">
+              <span id="char-count">0</span> / 50 000 caractères
+            </div>
           </div>
           <div class="tab-content" id="tab-file">
             <div class="drop-zone" id="drop-zone">
-              <input type="file" id="file-input" accept=".txt,.epub,.pdf" />
+              <input type="file" id="file-input" accept=".txt,.epub,.pdf,.json" />
               <span class="drop-icon">📄</span>
               <p>Glisse un fichier ici ou clique pour parcourir</p>
-              <p style="margin-top: 4px; font-size: 0.75rem">.txt · .epub · .pdf</p>
+              <p style="margin-top: 4px; font-size: 0.75rem">
+                .txt · .epub · .pdf · .json (Batch)
+              </p>
               <div class="file-name" id="file-name" style="display: none"></div>
             </div>
           </div>
         </div>
 
+        <!-- Batch Queue Panel -->
+        <div class="batch-panel" id="batch-panel">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+            <div class="card-label" style="margin-bottom:0">file d'attente</div>
+            <button class="btn-stop" id="btn-stop" onclick="stopBatch()">⏹ Arrêter</button>
+          </div>
+          <div class="batch-header">
+            <span class="batch-counter" id="batch-counter">0 / 0 leçons</span>
+            <div class="batch-timer" id="batch-timer">
+              <span class="timer-label">temps restant estimé</span>
+              <span id="batch-timer-value">--:--</span>
+            </div>
+          </div>
+          <div class="batch-progress-bar">
+            <div class="batch-progress-fill" id="batch-progress-fill"></div>
+          </div>
+          <div class="batch-list" id="batch-list"></div>
+        </div>
+
+        <!-- Single result card -->
         <div class="result-card" id="result-card">
           <div class="card-label">résultat</div>
           <audio id="audio-player" controls></audio>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 0.5rem">
+          <div
+            style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 0.5rem"
+          >
             <a class="btn-dl" id="dl-link" download>⬇ Télécharger</a>
             <button class="btn-dl" onclick="resetResult()">↩ Nouveau</button>
           </div>
         </div>
       </div>
-      
+
       <div class="layout-right">
         <div class="card">
           <div class="card-label">gemini — configuration</div>
-          <div class="info-box" style="margin-bottom: 1rem;">
-            Généré via l'API Google Cloud. Nécessite que la variable d'environnement GEMINI_API_KEY soit configurée.
-          </div>
           <div class="control-group">
             <label>Voix prédéfinie</label>
             <select id="gemini-voice">
@@ -200,22 +643,26 @@
             </select>
           </div>
         </div>
-        <button class="btn-generate" id="btn-gemini" onclick="generateGemini()">Générer avec Gemini</button>
+        <button class="btn-generate" id="btn-gemini" onclick="generateGemini()">
+          Générer avec Gemini
+        </button>
         <div class="loading-bar" id="loading-gemini"></div>
         <div class="error-msg" id="error-gemini"></div>
       </div>
     </div>
 
     <script>
-      // When deployed locally, it's relative. When on Docker, standard paths work.
-      // We can use relative /status and /tts/gemini to make it robust regardless of host
-      const API = ""; 
+      const API = "";
 
+      // ── Status check ──────────────────────────────────
       async function checkStatus() {
         try {
-          const r = await fetch(`${API}/status`, { signal: AbortSignal.timeout(3000) });
+          const r = await fetch(`${API}/status`, {
+            signal: AbortSignal.timeout(3000),
+          });
           const d = await r.json();
-          document.getElementById("dot-gemini").className = "status-dot " + (d.gemini ? "ok" : "err");
+          document.getElementById("dot-gemini").className =
+            "status-dot " + (d.gemini ? "ok" : "err");
         } catch {
           document.getElementById("dot-gemini").className = "status-dot err";
         }
@@ -223,32 +670,52 @@
       checkStatus();
       setInterval(checkStatus, 10000);
 
+      // ── Tabs ──────────────────────────────────────────
       document.querySelectorAll(".tab").forEach((btn) => {
         btn.addEventListener("click", () => {
-          document.querySelectorAll(".tab").forEach((b) => b.classList.remove("active"));
-          document.querySelectorAll(".tab-content").forEach((c) => c.classList.remove("active"));
+          document
+            .querySelectorAll(".tab")
+            .forEach((b) => b.classList.remove("active"));
+          document
+            .querySelectorAll(".tab-content")
+            .forEach((c) => c.classList.remove("active"));
           btn.classList.add("active");
-          document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+          document
+            .getElementById("tab-" + btn.dataset.tab)
+            .classList.add("active");
         });
       });
 
-      document.getElementById("text-input").addEventListener("input", function () {
-        document.getElementById("char-count").textContent = this.value.length.toLocaleString("fr");
-      });
+      // ── Char count ────────────────────────────────────
+      document
+        .getElementById("text-input")
+        .addEventListener("input", function () {
+          document.getElementById("char-count").textContent =
+            this.value.length.toLocaleString("fr");
+        });
 
+      // ── File drop ─────────────────────────────────────
       const dropZone = document.getElementById("drop-zone");
       const fileInput = document.getElementById("file-input");
-      dropZone.addEventListener("dragover", (e) => { e.preventDefault(); dropZone.classList.add("drag-over"); });
-      dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-over"));
+      dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("drag-over");
+      });
+      dropZone.addEventListener("dragleave", () =>
+        dropZone.classList.remove("drag-over"),
+      );
       dropZone.addEventListener("drop", (e) => {
-        e.preventDefault(); dropZone.classList.remove("drag-over");
+        e.preventDefault();
+        dropZone.classList.remove("drag-over");
         if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
       });
-      fileInput.addEventListener("change", () => { if (fileInput.files[0]) setFile(fileInput.files[0]); });
+      fileInput.addEventListener("change", () => {
+        if (fileInput.files[0]) setFile(fileInput.files[0]);
+      });
 
       function setFile(f) {
         const ext = "." + f.name.split(".").pop().toLowerCase();
-        if (![".txt", ".epub", ".pdf"].includes(ext)) {
+        if (![".txt", ".epub", ".pdf", ".json"].includes(ext)) {
           showError("gemini", "Format non supporté");
           return;
         }
@@ -264,44 +731,312 @@
         return { activeTab, text, file };
       }
 
+      // ── JSON parsing (client-side) ────────────────────
+      function cleanHtml(raw) {
+        return raw.replace(/<[^>]*>/g, "");
+      }
+
+      function extractLessonText(lecon) {
+        const lines = [];
+        const titre = lecon.titre || "";
+        if (titre) lines.push("Titre de la leçon : " + titre);
+
+        for (const bloc of lecon.blocs || []) {
+          if (bloc.type === "texte") {
+            lines.push(cleanHtml(bloc.valeur || ""));
+          } else if (bloc.type === "liste") {
+            for (const item of bloc.items || []) {
+              lines.push("- " + cleanHtml(item));
+            }
+          }
+        }
+        return lines.join("\n");
+      }
+
+      // ── Main generate function ────────────────────────
       async function generateGemini() {
         hideError("gemini");
         const { activeTab, text, file } = getInput();
-        if (activeTab === "text" && !text) { showError("gemini", "Entre du texte."); return; }
-        if (activeTab === "file" && !file) { showError("gemini", "Sélectionne un fichier."); return; }
-        
-        setLoading("gemini", true);
-        const fd = new FormData();
-        fd.append("voice", document.getElementById("gemini-voice").value);
-        if (activeTab === "text") fd.append("text", text);
-        else fd.append("file", file);
-        
-        try {
-          const res = await fetch(`${API}/tts/gemini`, { method: "POST", body: fd });
-          if (!res.ok) {
-            const e = await res.json().catch(() => ({ detail: "Erreur serveur" }));
-            throw new Error(e.detail);
+        if (activeTab === "text" && !text) {
+          showError("gemini", "Entre du texte.");
+          return;
+        }
+        if (activeTab === "file" && !file) {
+          showError("gemini", "Sélectionne un fichier.");
+          return;
+        }
+
+        const isBatch =
+          activeTab === "file" &&
+          file.name.toLowerCase().endsWith(".json");
+
+        if (isBatch) {
+          // ── Batch mode: client-side queue ──
+          const raw = await file.text();
+          let data;
+          try {
+            data = JSON.parse(raw);
+          } catch {
+            showError("gemini", "Fichier JSON invalide.");
+            return;
           }
-          showResult(await res.json());
-        } catch (e) {
-          showError("gemini", `Erreur : ${e.message}`);
-        } finally {
-          setLoading("gemini", false);
+          const lecons = data.lecons || [];
+          if (!lecons.length) {
+            showError("gemini", "Aucune leçon trouvée dans le JSON.");
+            return;
+          }
+          startBatchQueue(lecons);
+        } else {
+          // ── Single mode ──
+          setLoading("gemini", true);
+          const fd = new FormData();
+          fd.append("voice", document.getElementById("gemini-voice").value);
+          if (activeTab === "text") fd.append("text", text);
+          else fd.append("file", file);
+
+          try {
+            const res = await fetch(`${API}/tts/gemini`, {
+              method: "POST",
+              body: fd,
+            });
+            if (!res.ok) {
+              const e = await res
+                .json()
+                .catch(() => ({ detail: "Erreur serveur" }));
+              throw new Error(e.detail);
+            }
+            showResult(await res.json());
+          } catch (e) {
+            showError("gemini", `Erreur : ${e.message}`);
+          } finally {
+            setLoading("gemini", false);
+          }
         }
       }
 
+      // ── Batch Queue System ────────────────────────────
+      let countdownInterval = null;
+      let estimatedSecondsLeft = 0;
+      let batchCancelled = false;
+
+      function stopBatch() {
+        batchCancelled = true;
+        document.getElementById("btn-stop").textContent = "⏹ Arrêté";
+        document.getElementById("btn-stop").disabled = true;
+        document.getElementById("batch-timer-value").textContent = "⛔ Arrêté";
+        if (countdownInterval) clearInterval(countdownInterval);
+        setLoading("gemini", false);
+      }
+
+      function startBatchQueue(lecons) {
+        batchCancelled = false;
+        document.getElementById("btn-stop").textContent = "⏹ Arrêter";
+        document.getElementById("btn-stop").disabled = false;
+        setLoading("gemini", true);
+        const panel = document.getElementById("batch-panel");
+        const list = document.getElementById("batch-list");
+        const fill = document.getElementById("batch-progress-fill");
+        const counter = document.getElementById("batch-counter");
+        const timerVal = document.getElementById("batch-timer-value");
+
+        // Reset
+        panel.classList.add("active");
+        list.innerHTML = "";
+        fill.style.width = "0%";
+        counter.textContent = `0 / ${lecons.length} leçons`;
+        timerVal.textContent = "--:--";
+        document.getElementById("result-card").classList.remove("active");
+
+        // Build queue items in the UI
+        const queue = [];
+        for (let i = 0; i < lecons.length; i++) {
+          const lecon = lecons[i];
+          const titre = lecon.titre || `Leçon ${i + 1}`;
+          const texte = extractLessonText(lecon);
+          if (!texte.trim()) continue;
+
+          const item = document.createElement("div");
+          item.className = "batch-item queue";
+          item.id = `batch-item-${i}`;
+          item.innerHTML = `
+            <span class="batch-icon">⏳</span>
+            <span class="batch-title">${titre}</span>
+            <span class="batch-actions">
+              <span class="batch-time">en attente</span>
+            </span>
+          `;
+          list.appendChild(item);
+
+          queue.push({ index: i, titre, texte, element: item });
+        }
+
+        panel.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        // Start countdown timer
+        estimatedSecondsLeft = 0;
+        if (countdownInterval) clearInterval(countdownInterval);
+        countdownInterval = setInterval(() => {
+          if (estimatedSecondsLeft > 0) {
+            estimatedSecondsLeft--;
+            timerVal.textContent = formatTimer(estimatedSecondsLeft);
+          }
+        }, 1000);
+
+        // Process queue
+        processQueue(queue, lecons.length);
+      }
+
+      async function processQueue(queue, total) {
+        const voice = document.getElementById("gemini-voice").value;
+        const fill = document.getElementById("batch-progress-fill");
+        const counter = document.getElementById("batch-counter");
+        const timerVal = document.getElementById("batch-timer-value");
+        const elapsedTimes = [];
+        let completed = 0;
+
+        for (const job of queue) {
+          if (batchCancelled) break;
+
+          const item = job.element;
+          const icon = item.querySelector(".batch-icon");
+          const timeSpan = item.querySelector(".batch-time");
+
+          // Mark as active
+          item.className = "batch-item active-item";
+          icon.innerHTML = '<span class="spinner"></span>';
+          timeSpan.textContent = "génération…";
+          item.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+          const startTime = Date.now();
+          let success = false;
+          let retries = 0;
+          const maxRetries = 10;
+
+          while (!success && retries < maxRetries) {
+            try {
+              const fd = new FormData();
+              fd.append("text", job.texte);
+              fd.append("voice", voice);
+
+              const res = await fetch(`${API}/tts/gemini`, {
+                method: "POST",
+                body: fd,
+              });
+
+              if (res.status === 429 || res.status === 503) {
+                retries++;
+                timeSpan.textContent = `limite API, pause 30s… (${retries}/${maxRetries})`;
+                icon.textContent = "⏳";
+                item.className = "batch-item active-item";
+                await sleep(30000);
+                icon.innerHTML = '<span class="spinner"></span>';
+                timeSpan.textContent = "génération…";
+                continue;
+              }
+
+              if (!res.ok) {
+                const e = await res
+                  .json()
+                  .catch(() => ({ detail: "Erreur serveur" }));
+                
+                if (e.detail && (e.detail.includes("429") || e.detail.includes("RESOURCE_EXHAUSTED"))) {
+                  retries++;
+                  timeSpan.textContent = `limite API, pause 30s… (${retries}/${maxRetries})`;
+                  icon.textContent = "⏳";
+                  await sleep(30000);
+                  icon.innerHTML = '<span class="spinner"></span>';
+                  timeSpan.textContent = "génération…";
+                  continue;
+                }
+                throw new Error(e.detail);
+              }
+
+              const data = await res.json();
+              const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+              elapsedTimes.push(parseFloat(elapsed));
+              completed++;
+              success = true;
+
+              // Build download link
+              const url = `data:${data.media_type};base64,${data.audio}`;
+              const safeName = job.titre.replace(/[\\/*?:"<>|]/g, "") + (data.media_type === "audio/mpeg" ? ".mp3" : ".wav");
+
+              item.className = "batch-item done-item";
+              icon.textContent = "✅";
+              item.querySelector(".batch-actions").innerHTML = `
+                <span class="batch-time">${elapsed}s</span>
+                <a class="btn-item-dl" href="${url}" download="${safeName}">⬇ MP3</a>
+              `;
+
+              // Update progress
+              const pct = Math.round((completed / total) * 100);
+              fill.style.width = pct + "%";
+              counter.textContent = `${completed} / ${total} leçons`;
+
+              // Update ETA
+              const avg = elapsedTimes.reduce((a, b) => a + b, 0) / elapsedTimes.length;
+              estimatedSecondsLeft = Math.round(avg * (total - completed));
+              timerVal.textContent = formatTimer(estimatedSecondsLeft);
+
+            } catch (e) {
+              item.className = "batch-item error-item";
+              icon.textContent = "❌";
+              timeSpan.textContent = e.message.substring(0, 40);
+              completed++;
+              break; // Skip this lesson
+            }
+          }
+
+          if (!success && retries >= maxRetries) {
+            item.className = "batch-item error-item";
+            icon.textContent = "❌";
+            item.querySelector(".batch-time").textContent = "échec (trop de tentatives)";
+            completed++;
+          }
+
+          // Small pause between requests to respect rate limits
+          if (completed < total) {
+            await sleep(2000);
+          }
+        }
+
+        // Done!
+        if (countdownInterval) clearInterval(countdownInterval);
+        timerVal.textContent = "✅ Terminé !";
+        setLoading("gemini", false);
+      }
+
+      function sleep(ms) {
+        return new Promise((r) => setTimeout(r, ms));
+      }
+
+      function formatTimer(totalSeconds) {
+        if (totalSeconds <= 0) return "00:00";
+        const m = Math.floor(totalSeconds / 60);
+        const s = totalSeconds % 60;
+        return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+      }
+
+      // ── Single result ─────────────────────────────────
       function showResult(data) {
         const url = `data:${data.media_type};base64,${data.audio}`;
         const player = document.getElementById("audio-player");
+
+        player.style.display = "block";
+        document.getElementById("result-card").querySelector(".card-label").innerHTML = "résultat";
         player.src = url;
         player.play();
+
         const dl = document.getElementById("dl-link");
         dl.href = url;
         dl.download = data.filename;
         document.getElementById("result-card").classList.add("active");
-        document.getElementById("result-card").scrollIntoView({ behavior: "smooth", block: "nearest" });
+        document
+          .getElementById("result-card")
+          .scrollIntoView({ behavior: "smooth", block: "nearest" });
       }
 
+      // ── UI helpers ────────────────────────────────────
       function setLoading(engine, active) {
         const btn = document.getElementById(`btn-${engine}`);
         const bar = document.getElementById(`loading-${engine}`);
@@ -323,6 +1058,8 @@
       function resetResult() {
         document.getElementById("result-card").classList.remove("active");
         document.getElementById("audio-player").src = "";
+        document.getElementById("batch-panel").classList.remove("active");
+        if (countdownInterval) clearInterval(countdownInterval);
       }
     </script>
   </body>
