@@ -17,7 +17,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            cd /root/TTS/
+            cd /root/TTS
             git pull origin master
             docker compose down
             docker compose up --build -d
